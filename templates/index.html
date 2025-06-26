@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Task Master</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center; border-style:dotted; background-color:#DCDCDC">To-do List</h1>
+
+    {% if tasks|length < 1 %}
+        <h2 style="text-align: center">There are no tasks. Create one below!</h2>
+    {% else %}
+        <div class="cards-container">
+            <div class="card">
+                <h3 style="background-color: #FFA07A;">Total Tasks</h3>
+                <p>{{ total }}</p>
+            </div>
+
+            <div class="card">
+                <h3 style="background-color: #B0E0E6;">Completed</h3>
+                <p>{{ completed|length }}</p>
+            </div>
+
+            <div class="card">
+                <h3 style="background-color: #D8BFD8;">Open</h3>
+                <p>{{ total - completed|length }}</p>
+            </div>
+
+            <div class="card" id="calendar">
+                <h3 style="background-color: #F0E68C;">Today's Date</h3>
+                <div class="card-body">
+                    <p id="data-formatada"></p>
+                </div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Progress</th>
+                    <th>Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td class="task-text {% if task.completed == 1 %}task-done{% endif %}">
+                        {{ task.content }}
+                    </td>
+
+                    <td style="text-align: center;">
+                        <a href="/toggle/{{task.id}}" class="toggle-link">
+                            <input type="checkbox" {% if task.completed == 1 %}checked{% endif %} style="pointer-events: none;">
+                        </a>
+                    </td>
+
+                    <td>{{ task.date_created.date() }}</td>
+
+                    <td> 
+                        <a href="/delete/{{task.id}}"><i class="fa-solid fa-trash"></i></a>
+                        <a href="/update/{{task.id}}"><i class="fa-solid fa-pen"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">
+                        <form action="/" method="POST">
+                            <input type="text" name="content" placeholder="Enter task">
+                            <input type="submit" value="Add Task">
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        {% endif %} </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    
+        //  LÓGICA PARA EXIBIR DATA ATUAL NO CARD  //
+        const elementoData = document.getElementById('data-formatada');
+        if (elementoData) {
+            function capitalizar(string) {
+                if (!string) return '';
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            const hoje = new Date();
+            const diaSemana = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(hoje).replace('-feira', '');
+            const diaMes = hoje.getDate();
+            const mes = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(hoje);
+            const ano = hoje.getFullYear();
+            const textoData = `<strong>${capitalizar(diaSemana)}</strong><br>${capitalizar(mes)} ${diaMes} de ${ano}`;
+            elementoData.innerHTML = textoData;
+        }
+    
+        //  LÓGICA PARA EFEITO DE RISCAR A TAREFA  //
+        const toggleLinks = document.querySelectorAll('.toggle-link');
+        toggleLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                const taskRow = this.closest('tr');
+                const taskTextElement = taskRow.querySelector('.task-text');
+                if (taskTextElement) {
+                    taskTextElement.classList.toggle('task-done');
+                }
+            });
+        });
+    
+    });
+    </script>
+{% endblock %}
